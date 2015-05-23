@@ -1,30 +1,35 @@
 package factory;
 
-import java.util.Collections;
-import java.util.List;
+import static java.util.Collections.emptyList;
+
+import java.util.Collection;
 
 import org.junit.rules.ExternalResource;
+
+import factory.Connection.ConnectionCreator;
 
 public class ConnectionRule<T extends Connection> extends ExternalResource {
 	
 	private T connection;
-	private List<String> addresses;
+	private Collection<String> addresses;
+	private ConnectionCreator<T> creator;
 
-	private ConnectionRule(List<String> addresses){
+	private ConnectionRule(ConnectionCreator<T> creator, Collection<String> addresses){
+		this.creator = creator;
 		this.addresses = addresses;
 	}
 
-	public static <T extends Connection> ConnectionRule<T> create(){
-		return new ConnectionRule<>(Collections.emptyList());
+	public static <T extends Connection> ConnectionRule<T> create(ConnectionCreator<T> creator){
+		return new ConnectionRule<>(creator, emptyList());
 	}
 	
-	public static <T extends Connection> ConnectionRule<T> create(List<String> addresses){
-		return new ConnectionRule<T>(Collections.emptyList());
+	public static <T extends Connection> ConnectionRule<T> create(ConnectionCreator<T> creator, Collection<String> addresses){
+		return new ConnectionRule<T>(creator, addresses);
 	}
 	
 	@Override
 	protected void before() throws Throwable {
-		this.connection = null; // Create this;	
+		this.connection = creator.build(addresses);	
 	}
 
 	@Override
@@ -37,6 +42,4 @@ public class ConnectionRule<T extends Connection> extends ExternalResource {
 	public T getConnection() {
 		return connection;
 	}
-	
-	
 }

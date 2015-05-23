@@ -1,29 +1,35 @@
 package factory;
 
-import java.util.List;
+import java.util.Collection;
 
 public abstract class Connection{
 
-	private List<String> addresses;
+	private Collection<String> addresses;
 
-	private Connection(List<String> addresses){
+	private Connection(Collection<String> addresses){
 		this.addresses = addresses;
 	}
 	
 	public void close(){
-		
+		System.out.println("Closed!");
 	} 
 	
 	public static class ConnectionA extends Connection{
-		private ConnectionA(List<String> addresses){
+		public ConnectionA(Collection<String> addresses){
 			super(addresses);
 		}
 	}
 
 	public static class ConnectionB extends Connection{
-		private ConnectionB(List<String> addresses){
+		public ConnectionB(Collection<String> addresses){
 			super(addresses);
 		}
+	}
+	
+	@FunctionalInterface
+	public interface ConnectionCreator<T>{
+		
+		T build(Collection<String> addresses);
 	}
 
 }
