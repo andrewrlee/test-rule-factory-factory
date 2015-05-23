@@ -10,6 +10,10 @@ public abstract class Connection{
 		this.addresses = addresses;
 	}
 	
+	public void close(){
+		
+	} 
+	
 	public static class ConnectionA extends Connection{
 		private ConnectionA(List<String> addresses){
 			super(addresses);
