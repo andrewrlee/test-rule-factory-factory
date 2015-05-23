@@ -42,4 +42,10 @@ public class ConnectionRule<T extends Connection> extends ExternalResource {
 	public T getConnection() {
 		return connection;
 	}
+	
+	public Collection<String> getAddresses() {
+		return connection.getAddresses();
+	}
+	
+	
 }

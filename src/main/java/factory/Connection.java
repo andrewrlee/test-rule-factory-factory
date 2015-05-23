@@ -26,8 +26,12 @@ public abstract class Connection{
 		}
 	}
 	
+	public Collection<String> getAddresses() {
+		return addresses;
+	}
+	
 	@FunctionalInterface
-	public interface ConnectionCreator<T>{
+	public interface ConnectionCreator<T extends Connection>{
 		
 		T build(Collection<String> addresses);
 	}
