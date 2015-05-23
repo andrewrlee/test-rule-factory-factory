@@ -2,38 +2,63 @@ package factory;
 
 import java.util.Collection;
 
-public abstract class Connection{
+public interface Connection{
 
-	private Collection<String> addresses;
+	void close();
+	String getName();
+	Collection<String> getAddresses();
+	
+	public static class ConnectionA implements Connection{
+		private Collection<String> addresses;
+		private String name;
 
-	private Connection(Collection<String> addresses){
-		this.addresses = addresses;
-	}
-	
-	public void close(){
-		System.out.println("Closed!");
-	} 
-	
-	public static class ConnectionA extends Connection{
-		public ConnectionA(Collection<String> addresses){
-			super(addresses);
+		public ConnectionA(String name, Collection<String> addresses){
+			this.addresses = addresses;
+			this.name = name;
+		}
+
+		@Override
+		public void close() {
+			System.out.println("Closing connection A");
+		}
+
+		@Override
+		public Collection<String> getAddresses() {
+			return addresses;
+		}
+		
+		@Override
+		public String getName() {
+			return name;
 		}
 	}
 
-	public static class ConnectionB extends Connection{
-		public ConnectionB(Collection<String> addresses){
-			super(addresses);
+	public static class ConnectionB implements Connection{
+		private Collection<String> addresses;
+		private String name;
+
+		public ConnectionB(String name, Collection<String> addresses){
+			this.addresses = addresses;
+			this.name = name;
 		}
-	}
-	
-	public Collection<String> getAddresses() {
-		return addresses;
+		
+		@Override
+		public void close() {
+			System.out.println("Closing connection B");
+		}
+		
+		public Collection<String> getAddresses() {
+			return addresses;
+		}
+		
+		@Override
+		public String getName() {
+			return name;
+		}
 	}
 	
 	@FunctionalInterface
 	public interface ConnectionCreator<T extends Connection>{
-		
-		T build(Collection<String> addresses);
+		T build(String name, Collection<String> addresses);
 	}
-
 }

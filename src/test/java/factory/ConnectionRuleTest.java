@@ -9,41 +9,54 @@ import org.junit.Test;
 
 import factory.Connection.ConnectionA;
 import factory.Connection.ConnectionB;
-import factory.ConnectionRuleFactoryFactory.ConnectionRuleFactory;
+import factory.ConnectionRule.ConnectionRuleFactory;
 
 public class ConnectionRuleTest {
 
-	public static ConnectionRuleFactory<ConnectionA> ConnectionARuleFactory = 
-			ConnectionRuleFactoryFactory.create(ConnectionA::new);
-	
-	public static ConnectionRuleFactory<ConnectionB> ConnectionBRuleFactory = 
-			ConnectionRuleFactoryFactory.create(ConnectionB::new);
+	public static ConnectionRuleFactory<ConnectionA> connectionARuleFactory = ConnectionRule.create(ConnectionA::new);
+	public static ConnectionRuleFactory<ConnectionB> connectionBRuleFactory = ConnectionRule.create(ConnectionB::new);
 	
 	@Rule
-	public ConnectionRule<ConnectionA> ruleA1 = ConnectionARuleFactory.create();
+	public ConnectionRule<ConnectionA> ruleA1 = connectionARuleFactory.create();
 	@Rule
-	public ConnectionRule<ConnectionA> ruleA2 = ConnectionARuleFactory.create(Collections.singleton("http://localhost/a"));
+	public ConnectionRule<ConnectionA> ruleA2 = connectionARuleFactory.create("customA", Collections.singleton("http://localhost/a"));
 	@Rule
-	public ConnectionRule<ConnectionB> ruleB1 = ConnectionBRuleFactory.create();
+	public ConnectionRule<ConnectionB> ruleB1 = connectionBRuleFactory.create();
 	@Rule
-	public ConnectionRule<ConnectionB> ruleB2 = ConnectionBRuleFactory.create(Collections.singleton("http://localhost/b"));
+	public ConnectionRule<ConnectionB> ruleB2 = connectionBRuleFactory.create("customB", Collections.singleton("http://localhost/b"));
 	
 	@Test
 	public void checkConnectionARules(){
-		assertThat(ruleA1.getConnection()).isNotNull();
-		assertThat(ruleA1.getAddresses()).isEmpty();
-		
-		assertThat(ruleA2.getConnection()).isNotNull();
-		assertThat(ruleA2.getAddresses()).containsExactly("http://localhost/a");
+		checkConnection(ruleA1.getConnection()).hasNoAddresses().hasName("default");
+		checkConnection(ruleA2.getConnection()).hasAddresses("http://localhost/a").hasName("customA");
 	}	
 	
 	@Test
 	public void checkConnectionBRules(){
-		assertThat(ruleB1.getConnection()).isNotNull();
-		assertThat(ruleB1.getAddresses()).isEmpty();
-		
-		assertThat(ruleB2.getConnection()).isNotNull();
-		assertThat(ruleB2.getAddresses()).containsExactly("http://localhost/b");
-	}	
+		checkConnection(ruleB1.getConnection()).hasNoAddresses().hasName("default");
+		checkConnection(ruleB2.getConnection()).hasAddresses("http://localhost/b").hasName("customB");
+	}
 	
+	public Verify checkConnection(Connection connection){
+		return new Verify(connection);
+	}
+	
+	private static class Verify{
+		private Connection connection;
+		private Verify(Connection connection) {
+			this.connection = connection;
+		}
+		private Verify hasName(String name){
+			assertThat(connection.getName()).isEqualTo(name);
+			return this;
+		}
+		private Verify hasNoAddresses(){
+			assertThat(connection.getAddresses()).isEmpty();
+			return this;
+		}
+		private Verify hasAddresses(String... addresses){
+			assertThat(connection.getAddresses()).contains(addresses);
+			return this;
+		}
+	}
 }

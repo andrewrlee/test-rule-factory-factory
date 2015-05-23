@@ -1,8 +1,7 @@
 package factory;
 
-import static java.util.Collections.emptyList;
-
 import java.util.Collection;
+import java.util.Collections;
 
 import org.junit.rules.ExternalResource;
 
@@ -10,26 +9,24 @@ import factory.Connection.ConnectionCreator;
 
 public class ConnectionRule<T extends Connection> extends ExternalResource {
 	
+	private final Collection<String> addresses;
+	private final ConnectionCreator<T> creator;
+	private final String name;
 	private T connection;
-	private Collection<String> addresses;
-	private ConnectionCreator<T> creator;
 
-	private ConnectionRule(ConnectionCreator<T> creator, Collection<String> addresses){
+	public static <T extends Connection> ConnectionRuleFactory<T> create(ConnectionCreator<T> creator){
+		return (name, addresses) ->  new ConnectionRule<T>(creator, name, addresses);
+	}
+	
+	private ConnectionRule(ConnectionCreator<T> creator, String name, Collection<String> addresses){
 		this.creator = creator;
 		this.addresses = addresses;
+		this.name = name;
 	}
 
-	public static <T extends Connection> ConnectionRule<T> create(ConnectionCreator<T> creator){
-		return new ConnectionRule<>(creator, emptyList());
-	}
-	
-	public static <T extends Connection> ConnectionRule<T> create(ConnectionCreator<T> creator, Collection<String> addresses){
-		return new ConnectionRule<T>(creator, addresses);
-	}
-	
 	@Override
 	protected void before() throws Throwable {
-		this.connection = creator.build(addresses);	
+		this.connection = creator.build(name, addresses);	
 	}
 
 	@Override
@@ -43,9 +40,14 @@ public class ConnectionRule<T extends Connection> extends ExternalResource {
 		return connection;
 	}
 	
-	public Collection<String> getAddresses() {
-		return connection.getAddresses();
+	@FunctionalInterface
+	public static interface ConnectionRuleFactory<T extends Connection>{
+		public ConnectionRule<T> create(String name, Collection<String> addresses);
+		public default ConnectionRule<T> create(){
+			return create("default", Collections.emptyList());
+		}
+		public default ConnectionRule<T> create(String name){
+			return create(name, Collections.emptyList());
+		}
 	}
-	
-	
 }

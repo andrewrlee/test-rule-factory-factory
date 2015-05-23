@@ -1,4 +1,5 @@
+factory/ConnectionRule$ConnectionRuleFactory.class
 factory/ConnectionRule.class
-factory/ConnectionRuleTest$ConnectionRuleFactoryFactory.class
-factory/ConnectionRuleTest$ConnectionRuleFactoryFactory$ConnectionRuleFactory.class
+factory/ConnectionRuleTest$Verify.class
 factory/ConnectionRuleTest.class
+factory/ConnectionRuleTest$1.class
