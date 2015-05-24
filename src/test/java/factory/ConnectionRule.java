@@ -1,33 +1,30 @@
 package factory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.rules.ExternalResource;
 
 import factory.Connection.ConnectionCreator;
 
+
 public class ConnectionRule<T extends Connection> extends ExternalResource {
 	
-	private final Collection<String> addresses;
-	private final ConnectionCreator<T> creator;
-	private final String name;
+	private final Supplier<T> connectionSupplier;
 	private T connection;
 
 	public static <T extends Connection> ConnectionRuleFactory<T> newFactory(ConnectionCreator<T> creator){
 		return () -> new Builder<>(creator);
 	}
 	
-	private ConnectionRule(ConnectionCreator<T> creator, String name, Collection<String> addresses){
-		this.creator = creator;
-		this.addresses = addresses;
-		this.name = name;
+	private ConnectionRule(Supplier<T> connectionSupplier){
+		this.connectionSupplier = connectionSupplier;
 	}
 
 	@Override
 	protected void before() throws Throwable {
-		this.connection = creator.build(name, addresses);	
+		this.connection = connectionSupplier.get();	
 	}
 
 	@Override
@@ -74,7 +71,7 @@ public class ConnectionRule<T extends Connection> extends ExternalResource {
 		}
 		
 		public ConnectionRule<T> create(){
-			return new ConnectionRule<T>(creator, name, addresses);
+			return new ConnectionRule<T>(() -> creator.build(name, addresses));
 		}
 	}
 }
