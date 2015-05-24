@@ -1,7 +1,8 @@
 package factory;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 import org.junit.rules.ExternalResource;
 
@@ -14,8 +15,8 @@ public class ConnectionRule<T extends Connection> extends ExternalResource {
 	private final String name;
 	private T connection;
 
-	public static <T extends Connection> ConnectionRuleFactory<T> create(ConnectionCreator<T> creator){
-		return (name, addresses) ->  new ConnectionRule<T>(creator, name, addresses);
+	public static <T extends Connection> ConnectionRuleFactory<T> newFactory(ConnectionCreator<T> creator){
+		return () -> new Builder<>(creator);
 	}
 	
 	private ConnectionRule(ConnectionCreator<T> creator, String name, Collection<String> addresses){
@@ -42,12 +43,38 @@ public class ConnectionRule<T extends Connection> extends ExternalResource {
 	
 	@FunctionalInterface
 	public static interface ConnectionRuleFactory<T extends Connection>{
-		public ConnectionRule<T> create(String name, Collection<String> addresses);
+		public Builder<T> build();
 		public default ConnectionRule<T> create(){
-			return create("default", Collections.emptyList());
+			return build().create();
 		}
-		public default ConnectionRule<T> create(String name){
-			return create(name, Collections.emptyList());
+	}
+	
+	public static class Builder<T extends Connection>{
+		private String name = "default";
+		private final ConnectionCreator<T> creator;
+		private final List<String> addresses = new ArrayList<>();
+
+		private Builder(ConnectionCreator<T> creator){
+			this.creator = creator;
+		}
+		
+		public Builder<T> name(String name){
+			this.name = name;
+			return this;
+		}
+		
+		public Builder<T> addresses(List<String> addresses){
+			this.addresses.addAll(addresses);
+			return this;
+		}
+		
+		public Builder<T> withAddress(String address) {
+			this.addresses.add(address);
+			return this;
+		}
+		
+		public ConnectionRule<T> create(){
+			return new ConnectionRule<T>(creator, name, addresses);
 		}
 	}
 }
